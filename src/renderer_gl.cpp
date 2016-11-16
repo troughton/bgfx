@@ -2217,6 +2217,8 @@ namespace bgfx { namespace gl
 
 			ovrPostReset();
 
+			m_needPresent = false;
+
 			BGFX_GPU_PROFILER_BIND();
 		}
 
@@ -2277,14 +2279,24 @@ namespace bgfx { namespace gl
 			{
 				for (uint32_t ii = 1, num = m_numWindows; ii < num; ++ii)
 				{
-					m_glctx.swap(m_frameBuffers[m_windows[ii].idx].m_swapChain);
+					FrameBufferGL& frameBuffer = m_frameBuffers[m_windows[ii].idx];
+					if (frameBuffer.m_needPresent)
+					{
+						m_glctx.swap(frameBuffer.m_swapChain);
+						frameBuffer.m_needPresent = false;
+					}
 				}
 
-				m_ovr.flip();
-				m_ovr.swap(_hmd); // TODO - move this out of end-of-frame
+				if (m_needPresent)
+				{
+					m_ovr.flip();
+					m_ovr.swap(_hmd);
 
-				// need to swap GL render context even if OVR is enabled to get the mirror texture in the output
-				m_glctx.swap();
+					// need to swap GL render context even if OVR is enabled to get
+					// the mirror texture in the output
+					m_glctx.swap();
+					m_needPresent = false;
+				}
 			}
 		}
 
@@ -2740,6 +2752,7 @@ namespace bgfx { namespace gl
 
 			if (!isValid(_fbh) )
 			{
+				m_needPresent |= true;
 				GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, m_msaaBackBufferFbo) );
 
 				if (m_srgbWriteControlSupport)
@@ -2761,6 +2774,7 @@ namespace bgfx { namespace gl
 				if (UINT16_MAX != frameBuffer.m_denseIdx)
 				{
 					m_glctx.makeCurrent(frameBuffer.m_swapChain);
+					frameBuffer.m_needPresent = true;
 				}
 				else
 				{
@@ -3451,6 +3465,7 @@ namespace bgfx { namespace gl
 		GLuint m_msaaBackBufferFbo;
 		GLuint m_msaaBackBufferRbos[2];
 		GlContext m_glctx;
+		bool m_needPresent;
 
 		const char* m_vendor;
 		const char* m_renderer;
@@ -5767,6 +5782,8 @@ namespace bgfx { namespace gl
 		m_numTh = _num;
 		memcpy(m_attachment, _attachment, _num*sizeof(Attachment) );
 
+		m_needPresent = false;
+
 		postReset();
 	}
 
@@ -5918,7 +5935,9 @@ namespace bgfx { namespace gl
 		m_swapChain = s_renderGL->m_glctx.createSwapChain(_nwh);
 		m_width     = _width;
 		m_height    = _height;
+		m_numTh     = 0;
 		m_denseIdx  = _denseIdx;
+		m_needPresent = false;
 	}
 
 	uint16_t FrameBufferGL::destroy()
@@ -5938,6 +5957,8 @@ namespace bgfx { namespace gl
 		memset(m_fbo, 0, sizeof(m_fbo) );
 		uint16_t denseIdx = m_denseIdx;
 		m_denseIdx = UINT16_MAX;
+		m_needPresent = false;
+		m_numTh = 0;
 
 		return denseIdx;
 	}
