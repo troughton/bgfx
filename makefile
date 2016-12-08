@@ -43,6 +43,7 @@ projgen: ## Generate project files for all configurations.
 	$(GENIE) --with-tools --with-examples --with-shared-lib                     vs2013
 	$(GENIE) --with-tools --with-examples --with-shared-lib                     vs2015
 	$(GENIE) --with-tools --with-examples --with-shared-lib --gcc=mingw-gcc     gmake
+	$(GENIE) --with-tools --with-examples --with-shared-lib --gcc=cygwin-clang  gmake
 	$(GENIE) --with-tools --with-examples --with-shared-lib --gcc=linux-gcc     gmake
 	$(GENIE) --with-tools --with-examples --with-shared-lib --gcc=osx           gmake
 	$(GENIE) --with-tools --with-examples --with-shared-lib --xcode=osx         xcode4
@@ -127,6 +128,19 @@ mingw-gcc-debug64: .build/projects/gmake-mingw-gcc ## Build - MinGW GCC x64 Debu
 mingw-gcc-release64: .build/projects/gmake-mingw-gcc ## Build - MinGW GCC x64 Release
 	$(MAKE) -R -C .build/projects/gmake-mingw-gcc config=release64
 mingw-gcc: mingw-gcc-debug32 mingw-gcc-release32 mingw-gcc-debug64 mingw-gcc-release64 ## Build - MinGW GCC x86/x64 Debug and Release
+
+.build/projects/gmake-cygwin-clang:
+	$(GENIE) --with-tools --with-examples --with-shared-lib --gcc=cygwin-clang gmake
+cygwin-clang-debug32: .build/projects/gmake-cygwin-clang ## Build - Cygwin x86 Debug
+	$(MAKE) -R -C .build/projects/gmake-cygwin-clang config=debug32
+cygwin-clang-release32: .build/projects/gmake-cygwin-clang ## Build - Cygwin x86 Release
+	$(MAKE) -R -C .build/projects/gmake-cygwin-clang config=release32
+cygwin-clang-debug64: .build/projects/gmake-cygwin-clang ## Build - Cygwin x64 Debug
+	$(MAKE) -R -C .build/projects/gmake-cygwin-clang config=debug64
+cygwin-clang-release64: .build/projects/gmake-cygwin-clang ## Build - Cygwin x64 Release
+	$(MAKE) -R -C .build/projects/gmake-cygwin-clang config=release64
+cygwin-clang: cygwin-clang-debug32 cygwin-clang-release32 cygwin-clang-debug64 cygwin-clang-release64 ## Build - Cygwin x86/x64 Debug and Release
+
 
 .build/projects/gmake-mingw-clang:
 	$(GENIE) --gcc=mingw-clang gmake
@@ -254,6 +268,8 @@ build-linux: linux-debug64 linux-release64
 
 build-windows: mingw-gcc
 
+build-cygwin: cygwin-clang-debug64 cygwin-clang-release64
+
 build: build-$(OS)
 
 rebuild-shaders:
@@ -301,12 +317,21 @@ EXE=
 endif
 endif
 else
+ifeq ($(UNAME),$(filter $(UNAME),CYGWIN_NT))
+OS=windows
+BUILD_PROJECT_DIR=gmake-cygwin-clang
+BUILD_OUTPUT_DIR=win64_cygwin-clang
+BUILD_TOOLS_CONFIG=release64
+BUILD_TOOLS_SUFFIX=Release
+EXE=.exe
+else
 OS=windows
 BUILD_PROJECT_DIR=gmake-mingw-gcc
 BUILD_OUTPUT_DIR=win64_mingw-gcc
 BUILD_TOOLS_CONFIG=release64
 BUILD_TOOLS_SUFFIX=Release
 EXE=.exe
+endif
 endif
 
 geometryc: .build/projects/$(BUILD_PROJECT_DIR) ## Build geometryc tool.
