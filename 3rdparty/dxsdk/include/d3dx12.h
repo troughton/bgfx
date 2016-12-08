@@ -1356,7 +1356,12 @@ inline UINT64 GetRequiredIntermediateSize(
     UINT64 RequiredSize = 0;
     
     ID3D12Device* pDevice;
+#if !defined(__CYGWIN__)
     pDestinationResource->GetDevice(__uuidof(ID3D12Device), reinterpret_cast<void**>(&pDevice));
+#else
+    static const GUID uuid = { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
+    pDestinationResource->GetDevice(uuid, reinterpret_cast<void**>(&pDevice));
+#endif
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, 0, nullptr, nullptr, nullptr, &RequiredSize);
     pDevice->Release();
     
@@ -1450,7 +1455,12 @@ inline UINT64 UpdateSubresources(
     
     D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
     ID3D12Device* pDevice;
+#if !defined(__CYGWIN__)
     pDestinationResource->GetDevice(__uuidof(ID3D12Device), reinterpret_cast<void**>(&pDevice));
+#else
+    static const GUID uuid = { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
+    pDestinationResource->GetDevice(uuid, reinterpret_cast<void**>(&pDevice));
+#endif
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, pLayouts, pNumRows, pRowSizesInBytes, &RequiredSize);
     pDevice->Release();
     
@@ -1478,7 +1488,12 @@ inline UINT64 UpdateSubresources(
     
     D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
     ID3D12Device* pDevice;
-    pDestinationResource->GetDevice(__uuidof(*pDevice), reinterpret_cast<void**>(&pDevice));
+#if !defined(__CYGWIN__)
+    pDestinationResource->GetDevice(__uuidof(ID3D12Device), reinterpret_cast<void**>(&pDevice));
+#else
+    static const GUID uuid = { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
+    pDestinationResource->GetDevice(uuid, reinterpret_cast<void**>(&pDevice));
+#endif
     pDevice->GetCopyableFootprints(&Desc, FirstSubresource, NumSubresources, IntermediateOffset, Layouts, NumRows, RowSizesInBytes, &RequiredSize);
     pDevice->Release();
     
