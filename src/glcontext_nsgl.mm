@@ -76,6 +76,7 @@ namespace bgfx { namespace gl
         } else {
             glContext = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:(NSOpenGLContext*)g_internalData.context];
             [glView setOpenGLContext:glContext];
+            [glView setWantsBestResolutionOpenGLSurface:true];
         }
         
         BGFX_FATAL(NULL != glContext, Fatal::UnableToInitialize, "Failed to initialize GL context.");
@@ -122,6 +123,7 @@ namespace bgfx { namespace gl
         
         NSWindow *m_window;
         NSOpenGLContext *m_context;
+        NSOpenGLView *m_view;
 	};
 
 	class AutoreleasePoolHolder
