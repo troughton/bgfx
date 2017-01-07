@@ -57,7 +57,7 @@
 					|| BX_PLATFORM_LINUX \
 					|| BX_PLATFORM_OSX \
 					|| BX_PLATFORM_WINDOWS \
-					? 1 : 0)
+					? 31 : 0)
 #	endif // BGFX_CONFIG_RENDERER_OPENGL
 
 #	ifndef BGFX_CONFIG_RENDERER_OPENGLES

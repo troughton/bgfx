@@ -342,6 +342,8 @@ namespace bgfx { namespace mtl
 	BX_STATIC_ASSERT(TextureFormat::Count == BX_COUNTOF(s_textureFormat) );
 
 	int s_msaa[5] = { 1,2,4,8,16 };
+    
+    NSAutoreleasePool *m_autoreleasePool;
 
 	#define SHADER_FUNCTION_NAME ("xlatMtlMain")
 	#define SHADER_UNIFORM_NAME ("_mtl_u")
@@ -364,11 +366,14 @@ namespace bgfx { namespace mtl
 
 		~RendererContextMtl()
 		{
+            [m_autoreleasePool drain];
 		}
 
 		bool init()
 		{
 			BX_TRACE("Init.");
+            
+            m_autoreleasePool = [[NSAutoreleasePool alloc] init];
 
 			m_fbh.idx = invalidHandle;
 			memset(m_uniforms, 0, sizeof(m_uniforms) );
@@ -3878,6 +3883,8 @@ namespace bgfx { namespace mtl
 
 			rce.endEncoding();
 		 }
+        [m_autoreleasePool drain];
+        m_autoreleasePool = [[NSAutoreleasePool alloc] init];
 	}
 
 } /* namespace mtl */ } // namespace bgfx
